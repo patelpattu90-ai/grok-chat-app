@@ -1,19 +1,15 @@
 import os
 import requests
-from dotenv import load_dotenv
-
-load_dotenv()
+import re
 
 API_KEY = os.getenv("GROQ_API_KEY")
 BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "qwen/qwen3-32b"
-
+MODEL = "mixtral-8x7b-32768"
 
 def chat_with_groq(messages, temperature=0.2):
     if not API_KEY:
         return "❌ ERROR: GROQ_API_KEY not set"
 
-    # Ensure valid message format
     if not isinstance(messages, list):
         return "❌ ERROR: messages must be a list"
 
@@ -31,7 +27,13 @@ def chat_with_groq(messages, temperature=0.2):
     try:
         r = requests.post(BASE_URL, headers=headers, json=payload, timeout=30)
         r.raise_for_status()
-        return r.json()["choices"][0]["message"]["content"]
+
+        content = r.json()["choices"][0]["message"]["content"]
+
+        # Remove <think>...</think> blocks
+        content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
+
+        return content.strip()
 
     except requests.exceptions.HTTPError:
         return f"❌ HTTP Error {r.status_code}: {r.text}"
@@ -41,5 +43,6 @@ def chat_with_groq(messages, temperature=0.2):
 
     except KeyError:
         return f"❌ Invalid response format: {r.text}"
+
 
 
