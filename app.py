@@ -1,5 +1,6 @@
 import streamlit as st
-from grok_client import chat_with_grok
+from groq_client import chat_with_groq
+
 
 st.set_page_config(page_title="Grok Chat")
 st.title("🤖 Grok Chat")
@@ -19,7 +20,7 @@ if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.spinner("Thinking..."):
-        reply = chat_with_grok(st.session_state.messages)
+        reply = chat_with_groq(st.session_state.messages)
 
     st.session_state.messages.append({"role": "assistant", "content": reply})
 
