@@ -9,7 +9,7 @@ BASE_URL = "https://api.x.ai/v1/chat/completions"
 
 def chat_with_grok(messages, temperature=0.2):
     if not API_KEY:
-        return "ERROR: GROK_API_KEY not found"
+        return "ERROR: GROK_API_KEY not set"
 
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -17,12 +17,15 @@ def chat_with_grok(messages, temperature=0.2):
     }
 
     payload = {
-        "model": "grok-2-latest",
+        "model": "grok-beta",
         "messages": messages,
-        "temperature": temperature
+        "temperature": temperature,
+        "stream": False
     }
 
-    r = requests.post(BASE_URL, headers=headers, json=payload)
-    r.raise_for_status()
+    r = requests.post(BASE_URL, headers=headers, json=payload, timeout=30)
+    if r.status_code != 200:
+        return f"ERROR {r.status_code}: {r.text}"
+
     return r.json()["choices"][0]["message"]["content"]
 
